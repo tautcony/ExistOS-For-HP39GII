@@ -1,0 +1,24 @@
+OSLoader/start.c
+  s_a1a246bbc675b0::t_9a4379826eceb1 390,1072
+  s_a1a246bbc675b0::t_e480e532d5f10b 393-404
+OSLoader/msc_disk.c
+  s_a1a246bbc675b0::t_9a4379826eceb1 306-310,371-373,375-383
+.github/workflows/build.yml
+  s_a1a246bbc675b0::t_fa182bcbb991a8 3,7,12-13,16,29,40,55,66,86,88-110,120-124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "37d22665f06374d5e52516e3d8ebb81a8a09b0e6",
+  "prompts": {},
+  "sessions": {
+    "s_a1a246bbc675b0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0893b-4de0-7d31-a372-189164d4734b",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "TautCony <i@tautcony.xyz>"
+    }
+  }
+}
