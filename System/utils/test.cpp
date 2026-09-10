@@ -326,6 +326,14 @@ extern bool khicasRunning;
 
 		kcas_main(0,0);
 
+		// kcas_main returns once the user quits KhiCAS (Fich -> Quit) or the
+		// console hits a fatal error. The vGL worker tasks created by
+		// vGL_Initialize() only exit after khicasRunning is cleared; without
+		// this they would keep flushing KhiCAS frames over the system UI, and
+		// every relaunch would leak another pair of tasks.
+		khicasRunning = false;
+		vTaskDelay(pdMS_TO_TICKS(600)); // > 500ms poll of vGL_consoleTask
+
         /*
         context ct;
         contextptr=&ct;

@@ -16039,6 +16039,7 @@ static void display(textArea *text, int &isFirstDraw, int &totalTextY, int &scro
   int Start_Line, Last_Line,editline_cursor;
   int Case;
   int console_changed=0; // 1 if something new in history
+  bool console_quit_requested=false;
   int dconsole_mode=1; // 0 disables dConsole commands
 
 #define Current_Line (Start_Line + Cursor.y)
@@ -19955,14 +19956,20 @@ void PrintRev(const char *s,int color,bool colorsyntax,GIAC_CONTEXT) {
   char *Console_GetLine(GIAC_CONTEXT)
   {
     int return_val;
+	console_quit_requested=false;
 	
     do
       {
 	return_val = Console_GetKey(contextptr);
-	if (return_val==KEY_SHUTDOWN)
+	if (return_val==KEY_SHUTDOWN){
+	  console_quit_requested=true;
 	  return 0;
+	}
 	Console_Disp(1,contextptr);
-	if (return_val == KEY_CTRL_MENU) return 0;
+	if (return_val == KEY_CTRL_MENU){
+	  console_quit_requested=true;
+	  return 0;
+	}
 	if (return_val == CONSOLE_MEM_ERR) return NULL;
       } while (return_val != CONSOLE_NEW_LINE_SET);
 
@@ -22270,8 +22277,22 @@ int kcas_main(int isAppli, unsigned short OptionNum)
   {
     
     if ((expr = xcas::Console_GetLine(contextptr)) == NULL){
-      confirm("memory error","");
-      break;
+      // NULL means either the user asked to quit from the Fich menu
+      // (console_quit_requested) or the console ran out of memory.
+      // Do NOT call giac::release_globals() here: it deletes the objects
+      // returned by function-local statics (e.g. library_functions()) without
+      // nulling the static pointer, so the next KhiCAS launch in this same
+      // process would dereference freed memory.
+      if (xcas::console_quit_requested)
+        xcas::save_session(contextptr);
+      else
+        confirm("memory error","");
+      xcas::Console_Free();
+      if (xcas::sheetptr){
+        delete xcas::sheetptr;
+        xcas::sheetptr=0;
+      }
+      return 0;
     }
     if (strcmp((const char *)expr, "restart") == 0)
     {
