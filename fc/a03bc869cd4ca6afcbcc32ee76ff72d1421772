@@ -1,0 +1,32 @@
+Libs/src/khicas/kdisplay.cc
+  s_00ab8b124096dd::t_9d98c30ca1c41a 16042,19959,19965,19969-19972,22289
+  s_00ab8b124096dd::t_69f90f6cd57a4b 19964,19967
+  s_0576b5559d2eb1::t_6e298ab35b8dee 22280-22288
+  s_00ab8b124096dd::t_9bce89ef607fb4 22290-22295
+System/utils/test.cpp
+  s_0576b5559d2eb1::t_e742db34fcf2df 329-336
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "fca03bc869cd4ca6afcbcc32ee76ff72d1421772",
+  "prompts": {},
+  "sessions": {
+    "s_00ab8b124096dd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08980-d887-7942-a8a2-fa2cc609fba2",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "TautCony <i@tautcony.xyz>"
+    },
+    "s_0576b5559d2eb1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b04e6fb7-41cf-430c-9047-b996966dbe1e",
+        "model": "deepseek-flash"
+      },
+      "human_author": "TautCony <i@tautcony.xyz>"
+    }
+  }
+}
