@@ -387,9 +387,21 @@ unsigned char blockChksum(char *block, unsigned int blockSize) {
 bool transBinMode = false;
 char *binBuf = NULL;
 uint32_t cdcBlockCnt;
-void MscSetCmd(char *cmd);
+void MscSetCmd(const char *cmd);
 void mkSTMPNandStructure(uint32_t OLStartBlock, uint32_t OLPages);
 void parseCDCCommand(char *cmd) {
+    if (strcmp(cmd, "VMSUSPEND") == 0) {
+        VMSuspend();
+        MscSetCmd("VMSUSPENDED\n");
+        return;
+    }
+
+    if (strcmp(cmd, "VMRESUME") == 0) {
+        VMResume();
+        MscSetCmd("VMRESUMED\n");
+        return;
+    }
+
     if (strcmp(cmd, "PING") == 0) {
         slowDownEnable(false);
 

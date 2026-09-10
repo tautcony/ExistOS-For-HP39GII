@@ -1,19 +1,17 @@
 name: Build
 
-on: 
+on:
   push:
-    branches:
-      - main
+  workflow_dispatch:
 
-env:
-  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-  
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Initialize submodules
       run: |
         git submodule update --init
@@ -26,7 +24,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libcrypto++-dev libusb-1.0-0-dev -y
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       id: sbtools-cache
       with:
         path: tools/sbtools
@@ -37,7 +35,7 @@ jobs:
         cd tools/sbtools
         make
         cd ../..
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       id: sys_signer-cache
       with:
         path: |
@@ -52,7 +50,7 @@ jobs:
         cmake --build .
         cp sysigner ../
         cd ../..
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       id: mpy-cache
       with:
         path: Libs/src/micropython-master/ports/eoslib
@@ -63,7 +61,7 @@ jobs:
         cd Libs/src/micropython-master/ports/eoslib
         make
         cd ../../../../..
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       id: khicas-cache
       with:
         path: |
@@ -83,9 +81,31 @@ jobs:
         echo "#define BUILD_STAMP \"Release build ${{ github.run_number }}\"" >> System/graphics/UI_build_stamp.h
         mkdir build
         cmake -S . -B build
-    - name : CMake build
+    - name: CMake build
       run: |
-        cmake --build build
+        cmake --build build --parallel
+    - name: Collect and package build outputs
+      run: |
+        set -euo pipefail
+        test -s build/System/ExistOS.sys
+        test -s build/OSLoader/OSLoader.sb
+        test -s build/System/sys_symtab.txt
+
+        rm -rf dist
+        mkdir -p dist
+        cp build/System/ExistOS.sys dist/ExistOS.sys
+        cp build/OSLoader/OSLoader.sb dist/OSLoader.sb
+        cp build/System/sys_symtab.txt dist/sys_symtab.txt
+
+        sha256sum dist/ExistOS.sys dist/OSLoader.sb dist/sys_symtab.txt > dist/SHA256SUMS
+        tar -czf "dist/ExistOS-build-${{ github.run_number }}.tar.gz" -C dist \
+          ExistOS.sys OSLoader.sb sys_symtab.txt SHA256SUMS
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ExistOS-build-${{ github.run_number }}
+        if-no-files-found: error
+        path: dist
     - name: Create GitHub release
       if: github.ref_name == 'main'
       uses: marvinpinto/action-automatic-releases@latest
@@ -95,15 +115,8 @@ jobs:
         title: build ${{ github.run_number }}
         prerelease: false
         files: |
-          build/System/ExistOS.sys
-          build/OSLoader/OSLoader.sb
-          build/System/sys_symtab.txt
-    - name: Upload Build outputs
-      if: github.ref_name != 'main'
-      uses: actions/upload-artifact@v4
-      with:
-        name: Build-outputs
-        path: |
-          build/System/ExistOS.sys
-          build/OSLoader/OSLoader.sb
-          build/System/sys_symtab.txt
+          dist/ExistOS.sys
+          dist/OSLoader.sb
+          dist/sys_symtab.txt
+          dist/SHA256SUMS
+          dist/ExistOS-build-${{ github.run_number }}.tar.gz

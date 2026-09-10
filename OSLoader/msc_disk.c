@@ -303,7 +303,11 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
             memcpy(buffer, msc_rec_disk_root, sizeof(msc_rec_disk_root));
             break;
         case 40:
-            memcpy(buffer, MscCmdBuf, sizeof(MscCmdBuf));
+            {
+                uint32_t copy_size = bufsize < sizeof(MscCmdBuf) ?
+                                         bufsize : sizeof(MscCmdBuf);
+                memcpy(buffer, MscCmdBuf, copy_size);
+            }
             break;
         default:
             //memset(buffer, 0, bufsize);
@@ -364,10 +368,19 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
 }
 
 void parseCDCCommand(char *cmd);
-void MscSetCmd(char *cmd) {
+void MscSetCmd(const char *cmd) {
+    size_t copy_size;
+
     memset(MscCmdBuf, 0, sizeof(MscCmdBuf));
-    memcpy(MscCmdBuf, cmd, sizeof(MscCmdBuf));
-    //strcpy((char *)MscCmdBuf, cmd);
+    if (cmd == NULL) {
+        return;
+    }
+
+    copy_size = strlen(cmd);
+    if (copy_size >= sizeof(MscCmdBuf)) {
+        copy_size = sizeof(MscCmdBuf) - 1;
+    }
+    memcpy(MscCmdBuf, cmd, copy_size);
 }
 
 // Callback invoked when received WRITE10 command.
